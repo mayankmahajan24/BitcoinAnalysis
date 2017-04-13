@@ -11,15 +11,14 @@ def load_sparse_csr(filename):
                          shape = loader['shape'])
 
 def main():
-	train = np.loadtxt("txTripletsCounts.txt")
-	test = np.loadtxt("testTriplets.txt")
+	train = np.loadtxt("txTripletsCounts.txt", dtype=np.int)
+	test = np.loadtxt("testTriplets.txt", dtype=np.int)
 	M = int(max(train[:,1]))
 	N = int(max(train[:,0]))
 
-	full_counts = np.zeros((N+1,M+1), dtype=np.int)
-	for row in train[:100,:]:
-		full_counts[row[0], row[1]] = row[2]
-	counts = csr_matrix(full_counts)
+	counts = csr_matrix((N+1,M+1), dtype=np.int)
+	for row in train:
+		counts[row[0], row[1]] = row[2]
 
 	save_sparse_csr("counts",counts)
 
