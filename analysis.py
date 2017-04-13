@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, coo_matrix
 
 def save_sparse_csr(filename,array):
     np.savez(filename,data = array.data ,indices=array.indices,
@@ -11,17 +11,20 @@ def load_sparse_csr(filename):
                          shape = loader['shape'])
 
 def main():
+	'''
 	train = np.loadtxt("txTripletsCounts.txt", dtype=np.int)
-	test = np.loadtxt("testTriplets.txt", dtype=np.int)
 	M = int(max(train[:,1]))
 	N = int(max(train[:,0]))
 
-	counts = csr_matrix((N+1,M+1), dtype=np.int)
-	for row in train:
-		counts[row[0], row[1]] = row[2]
-
+	counts = coo_matrix( (train[:,2], (train[:,0], train[:,1]) ))
+	counts = counts.tocsr()
 	save_sparse_csr("counts",counts)
 
+	test = np.loadtxt("testTriplets.txt", dtype=np.int)
+	'''
+
+	counts = load_sparse_csr("counts.npz")
+	print counts[0,1] , counts[0,438481]
 
 if __name__ == "__main__":
 	main()
