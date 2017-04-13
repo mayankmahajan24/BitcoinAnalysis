@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.sparse import csr_matrix, coo_matrix
+from scipy.sparse import csr_matrix, coo_matrix, linalg
 
 def save_sparse_csr(filename,array):
     np.savez(filename,data = array.data ,indices=array.indices,
@@ -8,7 +8,7 @@ def save_sparse_csr(filename,array):
 def load_sparse_csr(filename):
     loader = np.load(filename)
     return csr_matrix((  loader['data'], loader['indices'], loader['indptr']),
-                         shape = loader['shape'])
+                         shape = loader['shape'], dtype="F")
 
 def main():
 	'''
@@ -24,7 +24,11 @@ def main():
 	'''
 
 	counts = load_sparse_csr("counts.npz")
-	print counts[0,1] , counts[0,438481]
+	U, s, VT = linalg.svds(counts, k=1000)
+	sigma = np.diag(s)
+	save_sparse_csr("U",csr_matrix(U))
+	save_sparse_csr("sigma",csr_matrix(sigma))
+	save_sparse_csr("VT",csr_matrix(VT))
 
 if __name__ == "__main__":
 	main()
