@@ -1,4 +1,6 @@
 import numpy as np
+
+from sklearn.decomposition import NMF
 from scipy.sparse import csr_matrix, coo_matrix
 
 def save_sparse_csr(filename,array):
@@ -9,6 +11,11 @@ def load_sparse_csr(filename):
     loader = np.load(filename)
     return csr_matrix((  loader['data'], loader['indices'], loader['indptr']),
                          shape = loader['shape'])
+
+def run_nmf(n_components):
+	model = NMF(n_components=110)
+	model.fit(counts)
+	return model
 
 def main():
 	'''
