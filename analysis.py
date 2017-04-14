@@ -43,16 +43,20 @@ def main():
 	sigma = load_sparse_csr("data/sigma250.npz")
 	VT = load_sparse_csr("data/VT250.npz")
 
+
+	#To access any (x,y) coordinate, just do U[x,:] * sigma * VT[:,y]
+
+
 	test = np.loadtxt("data/testTriplets.txt", dtype=np.int)
-	print "Reconstruct reduced rank matrix"
-	recon =  U.dot(sigma.dot(VT))
-	save_sparse_csr("data/counts250", recon)
+	#print "Reconstruct reduced rank matrix with rank 100"
+	#recon100 =  U[:m,:100].dot(sigma[:100,:100].dot(VT[:100,:]))
+	#save_sparse_csr("data/counts100part1", recon)
 
 	print "Plotting"
 	for (i,row) in enumerate(test):
-		n = recon[row[0], row[1]]
-		color = 'ro' if row[2] == 0 else 'bo'
-		plt.scatter(i, n, color)	
+		val = U[row[0], :].dot (sigma.dot(VT[:,row[1]]))[0,0].real
+		color = [0] if row[2] == 0 else [99]
+		plt.scatter(i, val, c=color)	
 
 	plt.show()
 
