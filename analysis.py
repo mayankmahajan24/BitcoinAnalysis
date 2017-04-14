@@ -4,8 +4,13 @@ from sklearn.decomposition import NMF
 from scipy.sparse import csr_matrix, coo_matrix
 from scipy.sparse import csr_matrix, coo_matrix, linalg
 import matplotlib.pyplot as plt
+import itertools
 
-U, sigma, VT = None
+
+U = None
+sigma = None
+VT = None
+counts = None
 def save_sparse_csr(filename,array):
     np.savez(filename,data = array.data ,indices=array.indices,
              indptr =array.indptr, shape=array.shape )
@@ -59,25 +64,44 @@ def save_svd_recon_mat():
     save_sparse_csr("data/counts250", recon)
     return recon
 
+def load_svd_components():
+    global U, sigma, VT
+    U = load_sparse_csr("data/U250.npz")
+    sigma = load_sparse_csr("data/sigma250.npz")
+    VT = load_sparse_csr("data/VT250.npz")
 
-def plot_recon_values_scatter_plot(test):
-	#To access any (x,y) coordinate, just do U[x,:] * sigma * VT[:,y]
+def plot_recon_values_scatter_plot(counts,test):
+    global U, sigma, VT
 
- 	print "Plotting"
+    i = 0
+    first = U[:1000,:].dot(sigma.dot(VT[:,:1000]))
+    for send, rec in itertools.product(range(1000), range(1000)):
+        color = 'b' if counts[send,rec] == 0 else 'r'
+        print send, rec
+        plt.scatter(i, first[send,rec], c=color)
+        i+=1
+
+    '''
 	for (i,row) in enumerate(test):
-		val = U[row[0], :].dot (sigma.dot(VT[:,row[1]]))[0,0].real
-		color = [0] if row[2] == 0 else [99]
-		plt.scatter(i, val, c=color)	
+        #To access any (x,y) coordinate, just do U[x,:] * sigma * VT[:,y]
+		#val = U[row[0], :].dot (sigma.dot(VT[:,row[1]]))[0,0].real
+		color = 'b' if row[2] == 0 else 'r'
+        print i
+		plt.scatter(i, val, c=color, mec=color)	
+    '''
+    plt.yscale('log')
+    plt.show()
+
 
 def main():
     counts = load_sparse_csr("data/counts.npz")
     test = np.loadtxt("data/testTriplets.txt", dtype=np.int)
     
     print "Reconstruct reduced rank matrix"
-    recon =  recon_using_svd()
+    load_svd_components()
 
     print "Plotting"
-    plot_recon_values_scatter_plot(test)
+    plot_recon_values_scatter_plot(counts,test)
     
 
 
