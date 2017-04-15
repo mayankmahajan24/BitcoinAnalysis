@@ -1,10 +1,15 @@
 import numpy as np
 
 from sklearn.decomposition import NMF
-from scipy.sparse import csr_matrix, coo_matrix
 from scipy.sparse import csr_matrix, coo_matrix, linalg
 import matplotlib.pyplot as plt
 import itertools
+import matplotlib
+
+import random
+
+import pandas as pd
+from sklearn.metrics import roc_curve, auc
 
 
 U = None
@@ -30,14 +35,6 @@ def gen_nmf(A, n_components):
     save_sparse_csr("data/nmf_H_"+int(n_components), csr_matrix(H))
 
 
-def save_nmf_recon_mat(n_components):
-    W = load_sparse_csr("data/nmf_W_"+int(n_components)+".npz")
-    H = load_sparse_csr("data/nmf_H_"+int(n_components)+".npz")
-    recon = W.dot(H)
-    save_sparse_csr("data/counts_nmf_"+int(n_components), recon)
-    return recon
-
-
 def gen_svd():
     U, s, VT = linalg.svds(counts, k=250)
     sigma = np.diag(s)
@@ -46,14 +43,14 @@ def gen_svd():
     save_sparse_csr("data/VT",csr_matrix(VT))
 
 
-def gen_counts():
-    train = np.loadtxt("txTripletsCounts.txt", dtype=np.int)
+def gen_sparse_matrix(input_file_name, output_file_name):
+    train = np.loadtxt(input_file_name, dtype=np.int)
     M = int(max(train[:,1]))
     N = int(max(train[:,0]))
 
     counts = coo_matrix( (train[:,2], (train[:,0], train[:,1]) ))
     counts = counts.tocsr()
-    save_sparse_csr("data/counts",counts)
+    save_sparse_csr(output_file_name,counts)
 
 
 def save_svd_recon_mat():
@@ -93,15 +90,58 @@ def plot_recon_values_scatter_plot(counts,test):
     plt.show()
 
 
+def load_test_DF():
+    dftest = pd.read_csv('data/testTriplets.txt',
+        header=None,
+        index_col=None,
+        sep=' ',
+        names=['sender','receiver','transaction'])
+    return dftest
+
+
+def get_predictions_svd(U, sigma, VT, dftest):
+    pred = [np.sum(U[row['sender'],:] * sigma * VT[:,row['receiver']]) 
+        for index,row in dftest.iterrows()]
+    return np.array(pred).astype(float)
+
+
+def plot_test_roc(raw_pred, dftest, threshold=None):
+    pred = []
+    if threshold is not None:
+        for p in pred_f:
+            val = 0 if p < .000000005 else 1
+            pred.append(val)
+    else:
+        pred = raw_pred
+
+    label = dftest['transaction']
+    fpr, tpr, thresholds = roc_curve(label, pred)
+    roc_auc = auc(fpr, tpr)
+    print "Area under the ROC curve : %f" % roc_auc
+    matplotlib.rcParams['figure.figsize'] = (10, 10)
+    plt.plot(fpr, tpr, color='magenta', label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic example')
+    plt.legend(loc="lower right")
+    plt.show()
+
+
 def main():
     counts = load_sparse_csr("data/counts.npz")
-    test = np.loadtxt("data/testTriplets.txt", dtype=np.int)
+    # test = np.loadtxt("data/testTriplets.txt", dtype=np.int)
     
-    print "Reconstruct reduced rank matrix"
+    # print "Reconstruct reduced rank matrix"
     load_svd_components()
+    dftest = load_test_DF()
+    pred = get_predictions_svd(U, sigma, VT, dftest)
+    plot_test_roc(pred, dftest)
+    # print "Plotting"
+    # plot_recon_values_scatter_plot(counts,test)
 
-    print "Plotting"
-    plot_recon_values_scatter_plot(counts,test)
     
 
 
