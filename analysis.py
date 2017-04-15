@@ -35,6 +35,12 @@ def gen_nmf(A, n_components):
     save_sparse_csr("data/nmf_H_"+int(n_components), csr_matrix(H))
 
 
+def load_nmf_WH(n_components):
+    W = load_sparse_csr("data/nmf_W_"+str(n_components)+".npz")
+    H = load_sparse_csr("data/nmf_H_"+str(n_components)+".npz")
+    return W, H
+
+
 def gen_svd():
     U, s, VT = linalg.svds(counts, k=250)
     sigma = np.diag(s)
@@ -105,7 +111,13 @@ def get_predictions_svd(U, sigma, VT, dftest):
     return np.array(pred).astype(float)
 
 
-def plot_test_roc(raw_pred, dftest, threshold=None):
+def get_predictions_nmf(W, H, dftest):
+    pred = [np.sum(W[row['sender'],:] * H[:,row['receiver']]) 
+            for index,row in dftest.iterrows()]
+    return np.array(pred).astype(float)
+
+
+def plot_test_roc(raw_pred, dftest, plt_file_name=None, threshold=None):
     pred = []
     if threshold is not None:
         for p in pred_f:
@@ -127,17 +139,21 @@ def plot_test_roc(raw_pred, dftest, threshold=None):
     plt.ylabel('True Positive Rate')
     plt.title('Receiver operating characteristic example')
     plt.legend(loc="lower right")
+    if plt_file_name is not None:
+        plt.savefig(plt_file_name)
     plt.show()
 
 
 def main():
     counts = load_sparse_csr("data/counts.npz")
+    dftest = load_test_DF()
     # test = np.loadtxt("data/testTriplets.txt", dtype=np.int)
     
     # print "Reconstruct reduced rank matrix"
-    load_svd_components()
-    dftest = load_test_DF()
-    pred = get_predictions_svd(U, sigma, VT, dftest)
+    # load_svd_components()
+    W, H = load_nmf_WH(20) 
+    
+    pred = get_predictions_nmf(W, H, dftest)
     plot_test_roc(pred, dftest)
     # print "Plotting"
     # plot_recon_values_scatter_plot(counts,test)
