@@ -1,0 +1,24 @@
+Linear Algebra based:
+	Methods:
+	-> LDA
+	-> PCA
+	-> NMF
+	-> SVD
+	Parallel Dimensions:
+	-> Boolean Values / Frequency
+	-> Partial Data / Complete Data
+
+Graph Based:
+	Methods:
+	-> In-degree, Out-degree
+	-> Centrality: Overall, In-degree, Out-degree
+	-> PageRank
+	-> Connected Type: Strong, Weak
+	-> Closeness
+	-> Betweeness
+	-> Common Neighbors: Jaccards, Acad_Adar
+
+Unsupervised Learning: (Akash has very little idea about this.)
+	-> Clustering
+
+Collabarative Filtering????
