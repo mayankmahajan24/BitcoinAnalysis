@@ -22,3 +22,24 @@ Unsupervised Learning: (Akash has very little idea about this.)
 	-> Clustering
 
 Collabarative Filtering????
+
+
+KMeans results:
+0
+Number of clusters:  1 Area:  0.5
+452
+Number of clusters:  5 Area:  0.570444444444
+528
+Number of clusters:  50 Area:  0.574
+969
+Number of clusters:  100 Area:  0.628944444444
+968
+Number of clusters:  250 Area:  0.645666666667
+1782
+Number of clusters:  500 Area:  0.684888888889
+2054
+Number of clusters:  1000 Area:  0.749777777778
+5546
+Number of clusters:  5000 Area:  0.666333333333
+5655
+Number of clusters:  10000 Area:  0.663611111111
